@@ -57,15 +57,27 @@ cd VisionClaw/samples/CameraAccess
 open CameraAccess.xcodeproj
 ```
 
-### 2. Add your Gemini API key
+### 2. Set up your secrets
 
-Get a free API key at [Google AI Studio](https://aistudio.google.com/apikey).
+All API keys and tokens are stored in a local `Secrets.swift` file that is **gitignored** (never committed).
 
-Open `CameraAccess/Gemini/GeminiConfig.swift` and replace the placeholder:
+```bash
+cp CameraAccess/Secrets.example.swift CameraAccess/Secrets.swift
+```
+
+Open `CameraAccess/Secrets.swift` and fill in your values:
 
 ```swift
-static let apiKey = "YOUR_GEMINI_API_KEY"  // <-- paste your key here
+enum Secrets {
+  static let geminiAPIKey = "your-gemini-api-key"        // Required
+  static let openClawHost = "http://Your-Mac.local"      // Optional
+  static let openClawPort = 18789                        // Optional
+  static let openClawHookToken = "your-hook-token"       // Optional
+  static let openClawGatewayToken = "your-gateway-token" // Optional
+}
 ```
+
+Get a free Gemini API key at [Google AI Studio](https://aistudio.google.com/apikey). OpenClaw fields are only needed if you want agentic tool-calling (see below).
 
 ### 3. Build and run
 
@@ -118,15 +130,16 @@ Key settings:
 
 ### 2. Configure the iOS app
 
-In `GeminiConfig.swift`, update the OpenClaw settings:
+In your `Secrets.swift` (see Quick Start step 2), fill in the OpenClaw fields:
 
 ```swift
 static let openClawHost = "http://Your-Mac.local"           // your Mac's Bonjour hostname
 static let openClawPort = 18789
+static let openClawHookToken = "your-hook-token"             // from hooks.token in openclaw.json
 static let openClawGatewayToken = "your-gateway-token-here"  // must match gateway.auth.token
 ```
 
-To find your Mac's Bonjour hostname: **System Settings > General > Sharing** -- it's shown at the top (e.g., `Johns-MacBook-Pro.local`).
+To find your Mac's Bonjour hostname, run `scutil --get LocalHostName` in Terminal and append `.local` (e.g., `http://Johns-MacBook-Pro.local`).
 
 ### 3. Start the gateway
 
@@ -148,7 +161,9 @@ Now when you talk to the AI, it can execute tasks through OpenClaw.
 
 | File | Purpose |
 |------|---------|
-| `Gemini/GeminiConfig.swift` | API keys, model config, system prompt |
+| `Secrets.swift` | Local API keys and tokens (gitignored) |
+| `Secrets.example.swift` | Template for Secrets.swift |
+| `Gemini/GeminiConfig.swift` | Model config, system prompt, reads from Secrets |
 | `Gemini/GeminiLiveService.swift` | WebSocket client for Gemini Live API |
 | `Gemini/AudioManager.swift` | Mic capture (PCM 16kHz) + audio playback (PCM 24kHz) |
 | `Gemini/GeminiSessionViewModel.swift` | Session lifecycle, tool call wiring, transcript state |
@@ -191,9 +206,9 @@ Gemini Live supports function calling. This app declares a single `execute` tool
 
 ## Troubleshooting
 
-**"Gemini API key not configured"** -- Open `GeminiConfig.swift` and add your API key.
+**"Gemini API key not configured"** -- Make sure you copied `Secrets.example.swift` to `Secrets.swift` and added your API key (see Quick Start step 2).
 
-**OpenClaw connection timeout** -- Make sure your iPhone and Mac are on the same Wi-Fi network, the gateway is running (`openclaw gateway restart`), and the hostname in `GeminiConfig.swift` matches your Mac's Bonjour name.
+**OpenClaw connection timeout** -- Make sure your iPhone and Mac are on the same Wi-Fi network, the gateway is running (`openclaw gateway restart`), and the hostname in `Secrets.swift` matches your Mac's Bonjour name.
 
 **Echo/feedback in iPhone mode** -- The app mutes the mic while the AI is speaking. If you still hear echo, try turning down the volume.
 
